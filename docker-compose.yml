@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: ./app/Dockerfile
+    restart: always
+    env_file:
+      - .env
+    ports: 
+      - "80:80"
+    volumes: 
+      - ./app:/app
+    command: > 
+      sh -c "uvicorn main:app --host 0.0.0.0 --port 80"
+    depends_on:
+      - db
+
+  web:
+    build: 
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    ports: 
+      - "8080:8080"
+    volumes: 
+      - ./frontend:/home/node/app:rw
+    restart: "no"
+    command: sh
+    stdin_open: true
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    
+  db: 
+    env_file:
+      - .env
+    image: postgres:13-alpine
+    volumes: 
+      - dev-db-data:/var/lib/postgres/data
+    
+
+
+volumes:
+  dev-db-data:
